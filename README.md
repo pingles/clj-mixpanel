@@ -1,6 +1,6 @@
 # clj-mixpanel
 
-FIXME: write description
+Send events to Mixpanel.
 
 ## Usage
 
@@ -8,6 +8,6 @@ FIXME: write
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright &copy; 2012 Paul Ingles
 
 Distributed under the Eclipse Public License, the same as Clojure.
