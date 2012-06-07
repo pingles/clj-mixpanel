@@ -62,6 +62,4 @@
         params {:data (-> data (json-str) (base64-encode))
                 :ip (coerce-bool (nil? ip))
                 :test (coerce-bool test?)}]
-    (println "Data: " data)
-    (println "Notifying with: " params)
     (http/get api-url {:query-params params})))
