@@ -1,4 +1,4 @@
-(defproject clj-mixpanel "0.0.2"
+(defproject clj-mixpanel "0.0.3-SNAPSHOT"
   :description "Send events to Mixpanel"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-http "0.4.2"]
