@@ -51,14 +51,14 @@
   [url params]
   (log/info "posting to " url params)
   (http/post url
-   {:query-params (update-in params [:data] #(-> % json-str base64-encode))}))
+             {:query-params (update-in params [:data] #(-> % json-str base64-encode))}))
 
 (defn engage
   [action token distinct-id properties]
   (post engage-url
-   {:data {:$token token
-           :$distinct_id distinct-id
-           (keyword (str "$" (name action))) properties}}))
+        {:data {:$token token
+                :$distinct_id distinct-id
+                (keyword (str "$" (name action))) properties}}))
 
 ;;; public api ;;;
 

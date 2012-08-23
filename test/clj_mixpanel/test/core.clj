@@ -10,26 +10,25 @@
       timestamp "12345"]
 
   (fact (track token event {:distinct-id distinct-id :timestamp timestamp}) => response
-    (provided
-      (post track-url
-       {:data {:event event
-               :properties {:token token :distinct_id distinct-id :time timestamp}}
-        :ip "1" :test "0"})
-      => response))
+        (provided (post track-url
+                        {:data {:event event
+                                :properties {:token token
+                                             :distinct_id distinct-id
+                                             :time timestamp}}
+                         :ip "1" :test "0"})
+                  => response))
 
   (fact (set token distinct-id {:hams :clams}) => response
-    (provided
-      (post engage-url
-            {:data {:$token token
-                    :$distinct_id distinct-id
-                    :$set {:hams :clams}}})
-      => response))
+        (provided (post engage-url
+                        {:data {:$token token
+                                :$distinct_id distinct-id
+                                :$set {:hams :clams}}})
+                  => response))
 
   (fact (increment token distinct-id {:hams :clams}) => response
-    (provided
-      (post engage-url
-            {:data {:$token token
-                    :$distinct_id distinct-id
-                    :$add {:hams :clams}}})
-      => response)))
+        (provided (post engage-url
+                        {:data {:$token token
+                                :$distinct_id distinct-id
+                                :$add {:hams :clams}}})
+                  => response)))
 
