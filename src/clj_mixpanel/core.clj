@@ -2,11 +2,14 @@
   (:import [org.apache.commons.codec.binary Base64]
            [java.util Date UUID])
   (:require [clj-http.client :as http]
-            [clojure.string :as s])
-  (:use [clojure.data.json :only (json-str)]
-        [clojure.tools.logging :only (info)]))
+            [clojure.string :as s]
+            [clojure.tools.logging :as log])
+  (:use [clojure.data.json :only (json-str)])
+  (:refer-clojure :exclude [set]))
 
-(def api-url "http://api.mixpanel.com/track/")
+(def api-url "http://api.mixpanel.com/")
+(def track-url (str api-url "track"))
+(def engage-url (str api-url "engage"))
 
 (defn generate-uuid
   "Can be used to generate a unique ID suitable for identifying users."
@@ -24,7 +27,7 @@
   [^String s]
   (String. (Base64/decodeBase64 (.getBytes s))))
 
-(defn mk-request
+(defn track-request
   "event is a string representing the type of event. props should
    contain the token and distinct_id. m can contain any key values
    that represent the event's data."
@@ -44,9 +47,23 @@
   []
   (apply str (drop-last 3 (str (.getTime (Date. ))))))
 
-(defn notify
-  "Sends a notification to the Mixpanel API. Returns a future representing
-   the notification.
+(defn post
+  [url params]
+  (log/info "posting to " url params)
+  (http/post url
+   {:query-params (update-in params [:data] #(-> % json-str base64-encode))}))
+
+(defn engage
+  [action token distinct-id properties]
+  (post engage-url
+   {:data {:$token token
+           :$distinct_id distinct-id
+           (keyword (str "$" (name action))) properties}}))
+
+;;; public api ;;;
+
+(defn track
+  "Sends a tracks an action in the Mixpanel API.
 
    token: available in the dashboard
    event: string representing the type of event
@@ -55,16 +72,26 @@
 
    Example:
    (let [user-id (generate-uuid)]
-     (notify token \"My Event\" {:distinct-id user-id :key \"value})"
+     (track token \"My Event\" {:distinct-id user-id :key \"value})"
   [token event {:keys [distinct-id ip test timestamp] :as payload}]
   {:pre [(contains? payload :distinct-id)]}
   (let [props {:token token
                :distinct-id distinct-id}
         event-data (assoc (dissoc payload :timestamp :distinct-id) :time (or timestamp (now)))
-        data (mk-request props event event-data)
+        data (track-request props event event-data)
         params {:data data
                 :ip (coerce-bool (nil? ip))
-                :test (coerce-bool test)}
-        query-params (update-in params [:data] #(-> % (json-str) (base64-encode)))]
-    (info params)
-    (future (http/get api-url {:query-params query-params}))))
+                :test (coerce-bool test)}]
+    (post track-url params)))
+
+(defn notify
+  "Function for backwards compatibility.  Returns a future representing
+the tracking request's response. Deprecated in favor of track."
+  [token event options]
+  (future (track token event options)))
+
+(def set (partial engage :set))
+
+(def increment (partial engage :add))
+
+
